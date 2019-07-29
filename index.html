@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>IBM 20 day moving average</title>
+    <link href="app/styles/default.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div class="controls">
+      <div>
+        <label>Symbol</label>
+        <input class="input-symbol" value="IBM" />
+        <label>Moving Average</label>
+        <input class="input-moving-average" /> days
+      </div>
+    </div>
+    <div class="canvas-wrapper">
+      <canvas class=""></canvas>
+    </div>
+    <script src="./app/js/vendor/hammer.min.js"></script>
+    <script src="./app/js/index.js"></script>
+  </body>
+</html>

@@ -1,0 +1,32 @@
+* {
+  box-sizing: border-box;
+}
+
+.canvas-wrapper {
+  height: 600px;
+  width: 100%;
+  /* border: solid 1px #aaa; */
+  padding: 0;
+}
+
+.controls {
+  font-family: Arial;
+  font-size: 0.8rem;
+  margin: 6px 2px;
+}
+
+.input-moving-average {
+  width: 30px;
+  text-align: center;
+  color: blue;
+}
+
+.input-symbol {
+  width: 50px;
+  margin-right: 8px;
+  margin-left: 2px;
+  font-size: 1.2rem;
+  border: none;
+  color: blue;
+  /* border-bottom: solid 1px #444; */
+}

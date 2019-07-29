@@ -26,6 +26,8 @@ let config = {
 
 const canvas = qs('.canvas-wrapper canvas');
 const ctx = canvas.getContext('2d');
+const lineX = qs('.canvas-wrapper > .line-date');
+const infoLabel = qs('.canvas-wrapper > .info-label');
 
 init();
 
@@ -75,6 +77,8 @@ function init() {
     mapDataPoints();
     render();
   });
+
+  canvas.addEventListener('pointermove', info);
 
   onResize();
 
@@ -223,7 +227,8 @@ function mapDataPoints() {
   const closeArrPoints = zip(xArr, closeArr.map(el => yScale(el)));
   const ma20dayPoints = zip(xArr, ma20dayArr.map(el => yScale(el)));
 
-  const xAxisPoints = zip(xArr, slice(dates));
+  const dateArr = slice(dates);
+  const xAxisPoints = zip(xArr, dateArr);
 
   const yAxisPoints = getYAxisPoints(min, max, yScale);
 
@@ -232,7 +237,10 @@ function mapDataPoints() {
     closeArrPoints,
     xAxisPoints,
     yAxisPoints,
-    ma20dayPoints
+    ma20dayPoints,
+    closeArr,
+    ma20dayArr,
+    dateArr
   };
 }
 
@@ -241,6 +249,63 @@ function getRange(arr) {
     min: Math.min(...arr),
     max: Math.max(...arr)
   };
+}
+
+function info(ev) {
+  const [x, y] = positionOnElement(canvas, ev);
+  const { index, xPos, close, ma, date, onRight } = toIndex(x);
+
+  if (close) {
+    lineX.style.left = `${xPos}px`;
+    infoLabel.style.left = `${onRight ? xPos - 110 : xPos}px`;
+    infoLabel.style.top = `${y - 45}px`;
+
+    // lineX.setAttribute(
+    //   'title',
+    //   `date:   ${date}\nclose:       $${close}\nma:          $${ma.toFixed(2)}`
+    // );
+
+    infoLabel.innerHTML = `date:   ${date}\nclose:       $${close}\nma:          $${ma.toFixed(
+      2
+    )}`;
+
+    lineX.classList.toggle('right', onRight);
+    infoLabel.classList.toggle('right', onRight);
+  }
+}
+
+function toIndex(x) {
+  const {
+    offset,
+    itemWidth,
+    margin: { top, left },
+    closeArr,
+    ma20dayArr,
+    dateArr,
+    width
+  } = config;
+
+  const index = Math.round((x - left) / itemWidth);
+  const xPos = index * itemWidth + left;
+  const close = closeArr[index];
+  const ma = ma20dayArr[index];
+  const date = dateArr[index];
+  const onRight = width * 0.7 < xPos;
+
+  return { index, xPos, date, close, ma, onRight };
+}
+
+function positionOnElement(el, event) {
+  const point =
+    (typeof event.clientX !== 'undefined' && event) ||
+    (event.type === 'touchend' && event.changedTouches[0]) ||
+    (event.touches && event.touches[0]);
+
+  const { left, top } = el.getBoundingClientRect();
+  const { clientX, clientY } = point;
+  const position = [clientX - left, clientY - top];
+
+  return position;
 }
 
 function getXScale(arr, width, offset) {

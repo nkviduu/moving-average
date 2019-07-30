@@ -25,6 +25,7 @@ let config = {
 };
 
 const canvas = qs('.canvas-wrapper canvas');
+const canvasWrapper = qs('.canvas-wrapper');
 const ctx = canvas.getContext('2d');
 const lineX = qs('.canvas-wrapper > .line-date');
 const infoLabel = qs('.canvas-wrapper > .info-label');
@@ -78,7 +79,7 @@ function init() {
     render();
   });
 
-  canvas.addEventListener('pointermove', info);
+  canvasWrapper.addEventListener('pointermove', info);
 
   onResize();
 
@@ -96,7 +97,6 @@ function init() {
 
   const symbolInput = qs('.input-symbol');
   symbolInput.addEventListener('change', () => {
-    console.log('loading', symbolInput.value);
     loadSymbolData(symbolInput.value);
   });
 
@@ -258,12 +258,7 @@ function info(ev) {
   if (close) {
     lineX.style.left = `${xPos}px`;
     infoLabel.style.left = `${onRight ? xPos - 110 : xPos}px`;
-    infoLabel.style.top = `${y - 45}px`;
-
-    // lineX.setAttribute(
-    //   'title',
-    //   `date:   ${date}\nclose:       $${close}\nma:          $${ma.toFixed(2)}`
-    // );
+    infoLabel.style.top = `${y - 64}px`;
 
     infoLabel.innerHTML = `date:   ${date}\nclose:       $${close}\nma:          $${ma.toFixed(
       2

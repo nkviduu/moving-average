@@ -5,7 +5,6 @@
 .canvas-wrapper {
   height: 600px;
   width: 100%;
-  /* border: solid 1px #aaa; */
   padding: 0;
   position: relative;
 }
@@ -29,17 +28,14 @@
   font-size: 1.2rem;
   border: none;
   color: blue;
-  /* border-bottom: solid 1px #444; */
 }
 
 .line-date {
-  /* background: #ccc;
-  width: 1px; */
   border-left: dashed 1px #ccc;
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 20px;
+  left: -1000px;
   transition: all 200ms;
 }
 
@@ -47,9 +43,9 @@
   position: absolute;
   width: 110px;
   top: 0px;
-  left: 0px;
+  left: -1000px;
   padding: 6px;
-  background-color: #eeea;
+  background-color: #eeee;
   font-family: Arial;
   font-size: 0.7rem;
   white-space: pre-wrap;

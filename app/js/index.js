@@ -1,4 +1,4 @@
-import { drawPline, drawShapes, drawXaxis, drawYAxis } from './draw';
+import { drawPline, drawCurve, drawShapes, drawXaxis, drawYAxis } from './draw';
 import { getMovingAverage } from './calc/moving_average';
 import { getData } from './api';
 import { roundTo } from './utils/steps';
@@ -182,7 +182,9 @@ function render() {
 
     ctx.strokeStyle = colors.ma;
     ctx.lineWidth = 2;
-    drawPline(ctx, ma20dayPoints);
+    // drawPline(ctx, ma20dayPoints);
+
+    drawCurve(ctx, ma20dayPoints.map(([x, y]) => ({ x, y: y })));
   }
 
   function clearCanvas(canvas) {

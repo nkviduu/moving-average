@@ -1,5 +1,7 @@
 # moving-average
 
+Demo: https://nkviduu.tech/chartIQ/index.html
+
 install npm dependencies
 
 ```bash

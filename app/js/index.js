@@ -33,14 +33,47 @@ const infoLabel = qs('.canvas-wrapper > .info-label');
 init();
 
 function init() {
-  window.addEventListener('resize', onResize);
+  setUpEventListeners();
+}
 
-  const ht = new Hammer(canvas, {
+function setUpEventListeners() {
+  const symbolInput = qs('.input-symbol');
+  symbolInput.addEventListener('change', ({ target: { value } }) => {
+    handleSymbolChange(value);
+  });
+  handleSymbolChange(config.symbol);
+
+  const hammer = new Hammer(canvas, {
     direction: Hammer.DIRECTION_HORIZONTAL,
     threshold: 100
   });
+  hammer.on('pan', handleChartPan);
 
-  ht.on('pan', ev => {
+  window.addEventListener('resize', handleWindowResize);
+  handleWindowResize();
+
+  canvasWrapper.addEventListener('pointermove', handleInfoDisplay);
+
+  const movingAverageInput = qs('.input-moving-average');
+  movingAverageInput.value = config.movingAverageLen;
+  movingAverageInput.addEventListener('input', handleMovingAverageInput);
+
+  function handleSymbolChange(symbol) {
+    getData(symbol).then(data => {
+      config.data = {
+        OHLC: data,
+        dates: data.map(el => el.Date)
+      };
+      config.symbol = symbol;
+
+      // handleWindowResize();
+      updateTitle();
+      mapDataPoints();
+      render();
+    });
+  }
+
+  function handleChartPan(ev) {
     const { deltaX, isFinal } = ev;
     const { itemWidth, itemCount, offset, data: { OHLC } = {} } = config;
 
@@ -77,75 +110,76 @@ function init() {
 
     mapDataPoints();
     render();
-  });
+  }
 
-  canvasWrapper.addEventListener('pointermove', info);
+  function handleWindowResize() {
+    const { clientWidth: width, clientHeight: height } = document.body;
 
-  onResize();
+    const {
+      itemWidth,
+      margin: { left, right }
+    } = config;
 
-  loadSymbolData(config.symbol);
+    // update itemCount based on new width;
+    const itemCount = ((width - left - right) / config.itemWidth) >> 0;
 
-  const maInput = qs('.input-moving-average');
-  maInput.value = config.movingAverageLen;
-  maInput.addEventListener('input', () => {
-    const value = maInput.value;
-    if (isNaN(+value) || !value) {
-      return;
-    }
-    updateMovingAverage(+value);
-  });
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
 
-  const symbolInput = qs('.input-symbol');
-  symbolInput.addEventListener('change', () => {
-    loadSymbolData(symbolInput.value);
-  });
+    canvas.width = width;
+    canvas.height = height;
 
-  function updateMovingAverage(value) {
-    config.movingAverageLen = value;
+    const slice = arr => {
+      const start = arr.length - itemCount - (config.offset || 0);
+      const end = start + itemCount;
+      return arr.slice(start, end);
+    };
+
+    config = { ...config, width, height, itemCount, slice };
 
     mapDataPoints();
     render();
   }
-}
 
-function onResize() {
-  const { clientWidth: width, clientHeight: height } = document.body;
+  function handleInfoDisplay(ev) {
+    const [x, y] = positionOnElement(canvas, ev);
+    const { index, xPos, close, ma, date, onRight } = toIndex(x);
 
-  const {
-    itemWidth,
-    margin: { left, right }
-  } = config;
+    if (close) {
+      lineX.style.left = `${xPos}px`;
+      infoLabel.style.left = `${onRight ? xPos - 110 : xPos}px`;
+      infoLabel.style.top = `${y - 64}px`;
 
-  // update itemCount based on new width;
-  const itemCount = ((width - left - right) / config.itemWidth) >> 0;
+      infoLabel.innerHTML = `date:   ${date}\nclose:       $${close}\nma:          $${ma.toFixed(
+        2
+      )}`;
 
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
+      lineX.classList.toggle('right', onRight);
+      infoLabel.classList.toggle('right', onRight);
+    }
+  }
 
-  canvas.width = width;
-  canvas.height = height;
+  function handleMovingAverageInput() {
+    const value = movingAverageInput.value;
+    if (isNaN(+value) || !value) {
+      return;
+    }
+    updateMovingAverage(+value);
+  }
 
-  const slice = arr => {
-    const start = arr.length - itemCount - (config.offset || 0);
-    const end = start + itemCount;
-    return arr.slice(start, end);
-  };
+  function updateMovingAverage(value) {
+    config.movingAverageLen = value;
+    updateTitle();
 
-  config = { ...config, width, height, itemCount, slice };
+    mapDataPoints();
+    render();
+  }
 
-  mapDataPoints();
-  render();
-}
-
-function loadSymbolData(symbol) {
-  getData(symbol).then(data => {
-    config.data = {
-      OHLC: data,
-      dates: data.map(el => el.Date)
-    };
-
-    onResize();
-  });
+  function updateTitle() {
+    document.title = `${config.symbol} ${
+      config.movingAverageLen
+    } day moving average`;
+  }
 }
 
 function render() {
@@ -253,24 +287,6 @@ function getRange(arr) {
   };
 }
 
-function info(ev) {
-  const [x, y] = positionOnElement(canvas, ev);
-  const { index, xPos, close, ma, date, onRight } = toIndex(x);
-
-  if (close) {
-    lineX.style.left = `${xPos}px`;
-    infoLabel.style.left = `${onRight ? xPos - 110 : xPos}px`;
-    infoLabel.style.top = `${y - 64}px`;
-
-    infoLabel.innerHTML = `date:   ${date}\nclose:       $${close}\nma:          $${ma.toFixed(
-      2
-    )}`;
-
-    lineX.classList.toggle('right', onRight);
-    infoLabel.classList.toggle('right', onRight);
-  }
-}
-
 function toIndex(x) {
   const {
     offset,
@@ -323,6 +339,7 @@ function getYAxisPoints(min, max, yScale) {
   return result;
 }
 
+// functional utils
 function zip(arr1, arr2) {
   return arr1.map((el, index) => [el, arr2[index]]);
 }
